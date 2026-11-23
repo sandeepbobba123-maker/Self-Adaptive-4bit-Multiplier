@@ -1,0 +1,21 @@
+
+module approx_multiplier_4bit (
+    input  wire [3:0] A,
+    input  wire [3:0] B,
+    output wire [7:0] Product
+);
+
+    wire [3:0] row1;
+    wire [3:0] row2;
+    wire [3:0] row3;
+
+    assign row1 = A & {4{B[1]}};
+    assign row2 = A & {4{B[2]}};
+    assign row3 = A & {4{B[3]}};
+
+    assign Product =
+        ({4'b0000, row1} << 1) +
+        ({4'b0000, row2} << 2) +
+        ({4'b0000, row3} << 3);
+
+endmodule

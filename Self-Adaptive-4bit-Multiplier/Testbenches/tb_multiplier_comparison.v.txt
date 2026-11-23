@@ -1,0 +1,81 @@
+`timescale 1ns / 1ps
+
+module tb_multiplier_comparison;
+
+    reg [3:0] A, B;
+
+    wire [7:0] Exact_Product;
+    wire [7:0] Approx_Product;
+
+    reg [7:0] Error_Value;
+
+    integer i, j;
+    integer total_cases;
+    integer total_error;
+    integer max_error;
+    integer incorrect_results;
+    real average_error;
+
+    exact_multiplier_4bit U1 (
+        .A(A),
+        .B(B),
+        .Product(Exact_Product)
+    );
+
+    approx_multiplier_4bit U2 (
+        .A(A),
+        .B(B),
+        .Product(Approx_Product)
+    );
+
+    initial begin
+
+        total_cases = 0;
+        total_error = 0;
+        max_error = 0;
+        incorrect_results = 0;
+
+        for (i = 0; i < 16; i = i + 1) begin
+            for (j = 0; j < 16; j = j + 1) begin
+
+                A = i;
+                B = j;
+
+                #10;
+
+                if (Exact_Product >= Approx_Product)
+                    Error_Value = Exact_Product - Approx_Product;
+                else
+                    Error_Value = Approx_Product - Exact_Product;
+
+                total_cases = total_cases + 1;
+                total_error = total_error + Error_Value;
+
+                if (Error_Value > max_error)
+                    max_error = Error_Value;
+
+                if (Exact_Product != Approx_Product)
+                    incorrect_results = incorrect_results + 1;
+
+            end
+        end
+
+        average_error = total_error / 256.0;
+
+        $display("--------------------------------");
+        $display("MULTIPLIER COMPARISON RESULTS");
+        $display("--------------------------------");
+
+        $display("TOTAL TEST CASES = %d", total_cases);
+        $display("TOTAL ERROR = %d", total_error);
+        $display("AVERAGE ERROR = %f", average_error);
+        $display("MAXIMUM ERROR = %d", max_error);
+        $display("INCORRECT RESULTS = %d", incorrect_results);
+
+        $display("--------------------------------");
+
+        $finish;
+
+    end
+
+endmodule

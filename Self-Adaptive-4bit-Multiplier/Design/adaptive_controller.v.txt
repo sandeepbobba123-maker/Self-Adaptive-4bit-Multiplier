@@ -1,0 +1,31 @@
+module adaptive_controller (
+    input wire [7:0] Exact_Product,
+    input wire [7:0] Approx_Product,
+    input wire [3:0] Error_Threshold,
+
+    output wire [7:0] Final_Product,
+    output wire [7:0] Absolute_Error,
+
+    output wire Approx_Selected,
+    output wire Exact_Selected
+);
+
+    wire [7:0] threshold_extended;
+
+    assign threshold_extended =
+        {4'b0000, Error_Threshold};
+
+    assign Absolute_Error =
+        (Exact_Product >= Approx_Product) ?
+        (Exact_Product - Approx_Product) :
+        (Approx_Product - Exact_Product);
+
+    assign Approx_Selected =
+        (Absolute_Error <= threshold_extended);
+
+    assign Exact_Selected = ~Approx_Selected;
+
+    assign Final_Product =
+        Approx_Selected ? Approx_Product : Exact_Product;
+
+endmodule

@@ -1,0 +1,91 @@
+`timescale 1ns / 1ps
+
+module tb_adaptive_controller;
+
+    reg [3:0] A, B;
+    reg [3:0] Error_Threshold;
+
+    wire [7:0] Exact_Product;
+    wire [7:0] Approx_Product;
+
+    wire [7:0] Final_Product;
+    wire [7:0] Absolute_Error;
+
+    wire Approx_Selected;
+    wire Exact_Selected;
+
+    exact_multiplier_4bit U1 (
+        .A(A),
+        .B(B),
+        .Product(Exact_Product)
+    );
+
+    approx_multiplier_4bit U2 (
+        .A(A),
+        .B(B),
+        .Product(Approx_Product)
+    );
+
+    adaptive_controller U3 (
+        .Exact_Product(Exact_Product),
+        .Approx_Product(Approx_Product),
+        .Error_Threshold(Error_Threshold),
+        .Final_Product(Final_Product),
+        .Absolute_Error(Absolute_Error),
+        .Approx_Selected(Approx_Selected),
+        .Exact_Selected(Exact_Selected)
+    );
+
+    initial begin
+
+        // TEST 1: Approximation accepted
+        A = 7;
+        B = 5;
+        Error_Threshold = 7;
+
+        #10;
+
+        if (Final_Product !== 28 ||
+            Approx_Selected !== 1'b1 ||
+            Exact_Selected !== 1'b0)
+            $fatal(1, "TEST 1 FAILED");
+
+        $display("TEST 1 PASSED: Approximate result selected");
+
+        // TEST 2: Exact result selected
+        A = 7;
+        B = 5;
+        Error_Threshold = 6;
+
+        #10;
+
+        if (Final_Product !== 35 ||
+            Approx_Selected !== 1'b0 ||
+            Exact_Selected !== 1'b1)
+            $fatal(1, "TEST 2 FAILED");
+
+        $display("TEST 2 PASSED: Exact result selected");
+
+        // TEST 3: Both results are equal
+        A = 7;
+        B = 4;
+        Error_Threshold = 0;
+
+        #10;
+
+        if (Final_Product !== 28 ||
+            Approx_Selected !== 1'b1 ||
+            Exact_Selected !== 1'b0)
+            $fatal(1, "TEST 3 FAILED");
+
+        $display("TEST 3 PASSED: Zero error accepted");
+
+        $display("--------------------------------");
+        $display("ALL ADAPTIVE CONTROLLER TESTS PASSED");
+        $display("--------------------------------");
+
+        $finish;
+
+    end
+
+endmodule
